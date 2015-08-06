@@ -136,6 +136,7 @@
     <Content Include="packages.config" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Scripts\app.jsx" />
+    <None Include="Properties\PublishProfiles\dmsgenerator.pubxml" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>

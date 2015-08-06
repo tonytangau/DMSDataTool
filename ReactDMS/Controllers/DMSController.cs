@@ -28,7 +28,7 @@ namespace ReactDMS.Controllers
 
             var interval = TimeSpan.FromSeconds(1);
 
-            await DoPeriodicWorkAsync(interval, model.Url);
+            await DoPeriodicWorkAsync(interval, model.Url, model.TenantId);
 
             return Ok();
         }
@@ -47,12 +47,12 @@ namespace ReactDMS.Controllers
             return Ok();
         }
 
-        private async Task DoPeriodicWorkAsync(TimeSpan interval, string Url)
+        private async Task DoPeriodicWorkAsync(TimeSpan interval, string Url, Guid tenantId)
         {
             // Repeat this loop until cancelled.
             while (!cancellationToken.IsCancellationRequested)
             {
-                PostData(Url);
+                PostData(Url, tenantId);
 
                 // Wait to repeat again.
                 if (interval > TimeSpan.Zero)
@@ -60,7 +60,7 @@ namespace ReactDMS.Controllers
             }
         }
 
-        private void PostData(string Url)
+        private void PostData(string Url, Guid tenantId)
         {
             Random random = new Random();
 
@@ -99,7 +99,7 @@ namespace ReactDMS.Controllers
             //authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
             //webRequest.Headers["Authorization"] = "Basic " + authInfo;
 
-            webRequest.Headers["AuthenticationToken"] = "AED97B8E-8774-4373-AF2E-4B1B45456405";
+            webRequest.Headers["AuthenticationToken"] = tenantId.ToString();
 
             var deptSerialized = JsonConvert.SerializeObject(new[] { model });
             using (StreamWriter sw = new StreamWriter(webRequest.GetRequestStream()))
