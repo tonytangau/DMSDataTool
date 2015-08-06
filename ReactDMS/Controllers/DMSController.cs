@@ -87,10 +87,11 @@ namespace ReactDMS.Controllers
                 Id = DateTime.UtcNow.Ticks
             };
 
+            Url += "?saveToCloudStorage=false";
+
             var webRequest = (HttpWebRequest)WebRequest.Create(Url);
             webRequest.Method = "POST";
             webRequest.ContentType = "application/json";
-
             //var username = "steven@bsm";
             //var password = "aA!1234";
             ////webRequest.Credentials = new NetworkCredential(username, password);
