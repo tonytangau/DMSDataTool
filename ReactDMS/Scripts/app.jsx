@@ -1,8 +1,8 @@
 ﻿var DmsForm = React.createClass({
 	getInitialState: function() {
 		return {
-			api: 'https://localhost:44302/api/dms',//'hub3.azurewebsites.net/api/dms', 
-			tenantId: '98D11A03-5D71-4D58-8A1C-668103413360',
+			api: 'https://hub3-dev.azurewebsites.net/api/tools/dms', 
+			tenantId: 'AED97B8E-8774-4373-AF2E-4B1B45456405',
 			isDisabled: false
 		};
 	},
