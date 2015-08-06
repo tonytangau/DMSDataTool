@@ -28,7 +28,7 @@ namespace ReactDMS.Controllers
 
             var interval = TimeSpan.FromSeconds(1);
 
-            await DoPeriodicWorkAsync(interval, model.Url, model.TenantId);
+            await DoPeriodicWorkAsync(interval, model.Url);
 
             return Ok();
         }
@@ -47,12 +47,12 @@ namespace ReactDMS.Controllers
             return Ok();
         }
 
-        private async Task DoPeriodicWorkAsync(TimeSpan interval, string Url, Guid tenantId)
+        private async Task DoPeriodicWorkAsync(TimeSpan interval, string Url)
         {
             // Repeat this loop until cancelled.
             while (!cancellationToken.IsCancellationRequested)
             {
-                PostData(Url, tenantId);
+                PostData(Url);
 
                 // Wait to repeat again.
                 if (interval > TimeSpan.Zero)
@@ -60,53 +60,65 @@ namespace ReactDMS.Controllers
             }
         }
 
-        private void PostData(string Url, Guid tenantId)
+        private void PostData(string Url)
         {
             Random random = new Random();
 
-            var model = new DMS();
-            model.TenantId = tenantId;
-            model.TimeStamp = new DateTimeOffset(DateTime.Now);
-            model.DFP   =  random.Next(100, 300);
-            model.DFF   =  random.Next(200, 500);
-            model.HOP1  = random.Next(1000, 5000);
-            model.HOP2  = random.Next(0, 1000);
-            model.HOF   =  random.Next(200, 500);
-            model.TRP1  = random.Next(0, 1000);
-            model.TRP2  = random.Next(100, 300);
-            model.RPM   =  random.Next(200, 500);
-            model.AP    =   random.Next(1000, 5000);
-            model.AV    =   random.Next(0, 1000);
-            model.WV    =   random.Next(200, 500);
-            model.DTD   =  random.Next(0, 1000);
-            model.RT1   =  random.Next(100, 300);
-            model.RT2   =  random.Next(200, 500);
-            model.WOB   =  random.Next(1000, 5000);
-            model.ROP   =  random.Next(0, 1000);
+            var model = new DMS
+            {
+                Timestamp = DateTime.UtcNow,
+                DrillingFluidPressure = random.Next(100, 300),
+                DrillingFluidFlow = random.Next(200, 500),
+                HydraulicOilPressure1 = random.Next(1000, 5000),
+                HydraulicOilPressure2 = random.Next(0, 1000),
+                HydraulicOilFlow = random.Next(200, 500),
+                TraverseRamPressure1 = random.Next(0, 1000),
+                TraverseRamPressure2 = random.Next(100, 300),
+                Rpm = random.Next(200, 500),
+                AirPressure = random.Next(1000, 5000),
+                AirVolume = random.Next(0, 1000),
+                WaterVolume = random.Next(200, 500),
+                DrillTravelDistance = random.Next(0, 1000),
+                RotaryTorque1 = random.Next(100, 300),
+                RotaryTorque2 = random.Next(200, 500),
+                WeightOnBit = random.Next(1000, 5000),
+                RateOfPenetration = random.Next(0, 1000),
+                DduId = 1,
+                Id = DateTime.UtcNow.Ticks
+            };
 
             var webRequest = (HttpWebRequest)WebRequest.Create(Url);
             webRequest.Method = "POST";
             webRequest.ContentType = "application/json";
 
-            //var username = "tony.tang@imdexlimited.com";
+            //var username = "steven@bsm";
             //var password = "aA!1234";
-            //webRequest.Credentials = new NetworkCredential(username, password);
+            ////webRequest.Credentials = new NetworkCredential(username, password);
 
             //string authInfo = username + ":" + password;
             //authInfo = Convert.ToBase64String(Encoding.Default.GetBytes(authInfo));
             //webRequest.Headers["Authorization"] = "Basic " + authInfo;
 
-            var deptSerialized = JsonConvert.SerializeObject(model);
+            webRequest.Headers["AuthenticationToken"] = "AED97B8E-8774-4373-AF2E-4B1B45456405";
+
+            var deptSerialized = JsonConvert.SerializeObject(new[] { model });
             using (StreamWriter sw = new StreamWriter(webRequest.GetRequestStream()))
             {
                 sw.Write(deptSerialized);
             }
 
-            HttpWebResponse httpWebResponse = webRequest.GetResponse() as HttpWebResponse;
-            using (StreamReader sr = new StreamReader(httpWebResponse.GetResponseStream()))
+            try
             {
-                Debug.WriteLine(String.Format("StatusCode == {0}", httpWebResponse.StatusCode));
-                Debug.WriteLine(sr.ReadToEnd());
+                HttpWebResponse httpWebResponse = webRequest.GetResponse() as HttpWebResponse;
+                using (StreamReader sr = new StreamReader(httpWebResponse.GetResponseStream()))
+                {
+                    Debug.WriteLine(String.Format("StatusCode == {0}", httpWebResponse.StatusCode));
+                    Debug.WriteLine(sr.ReadToEnd());
+                }
+            }
+            catch (Exception e)
+            {
+                var a = e;
             }
         }
     }
@@ -120,87 +132,31 @@ namespace ReactDMS.Controllers
 
     public class DMS
     {
-        public Guid TenantId { get; set; }
-        public DateTimeOffset TimeStamp { get; set; }
+        public long Id { get; set; }
+        public int DduId { get; set; }
+        public DateTime Timestamp { get; set; }
 
-        /// <summary>
-        /// Drilling Fluid Pressure
-        /// </summary>
-        public double DFP { get; set; }
+        // Sensor data
+        public float DrillingFluidPressure { get; set; }
+        public float DrillingFluidFlow { get; set; }
+        public float HydraulicOilPressure1 { get; set; }
+        public float HydraulicOilPressure2 { get; set; }
+        public float HydraulicOilFlow { get; set; }
+        public float TraverseRamPressure1 { get; set; }
+        public float TraverseRamPressure2 { get; set; }
+        public float AirPressure { get; set; }
+        public float AirVolume { get; set; }
+        public float WaterVolume { get; set; }
+        public float DrillTravelDistance { get; set; }
+        public long RpmPulseAccumulator { get; set; }
+        public long HydraulicOilFlowPulseAccumulator { get; set; }
+        public long DrillingFluidFlowPulseAccumulator { get; set; }
 
-        /// <summary>
-        /// Drilling Fluid Flow
-        /// </summary>
-        public double DFF { get; set; }
-
-        /// <summary>
-        /// Hydraulic Oil Pressure 1
-        /// </summary>
-        public double HOP1 { get; set; }
-
-        /// <summary>
-        /// Hydraulic Oil Pressure 2
-        /// </summary>
-        public double HOP2 { get; set; }
-
-        /// <summary>
-        /// Hydraulic Oil Flow
-        /// </summary>
-        public double HOF { get; set; }
-
-        /// <summary>
-        /// Traverse Ram Pressure 1
-        /// </summary>
-        public double TRP1 { get; set; }
-
-        /// <summary>
-        /// Traverse Ram Pressure 2
-        /// </summary>
-        public double TRP2 { get; set; }
-
-        /// <summary>
-        /// Air Pressure
-        /// </summary>
-        public double AP { get; set; }
-
-        /// <summary>
-        /// Air Volume
-        /// </summary>
-        public double AV { get; set; }
-
-        /// <summary>
-        /// Water Volume
-        /// </summary>
-        public double WV { get; set; }
-
-        /// <summary>
-        /// Drill Travel Distance
-        /// </summary>
-        public double DTD { get; set; }
-
-        /// <summary>
-        /// Rotary Torque 1
-        /// </summary>
-        public double RT1 { get; set; }
-
-        /// <summary>
-        /// Rotary Torque 2
-        /// </summary>
-        public double RT2 { get; set; }
-
-        /// <summary>
-        /// Weight On Bit
-        /// </summary>
-        public double WOB { get; set; }
-
-        /// <summary>
-        /// Revolutions per minute
-        /// </summary>
-        public double RPM { get; set; }
-
-        /// <summary>
-        /// Rate Of Penetration
-        /// </summary>
-        public double ROP { get; set; }
+        // Calculated fields from PLC
+        public float RateOfPenetration { get; set; }
+        public float Rpm { get; set; }
+        public float WeightOnBit { get; set; }
+        public float RotaryTorque1 { get; set; }
+        public float RotaryTorque2 { get; set; }
     }
 }
